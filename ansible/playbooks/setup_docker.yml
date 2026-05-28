@@ -1,0 +1,5 @@
+- hosts: role_proji_ec2_role
+  gather_facts: false
+  
+  roles:
+    - docker
