@@ -13,7 +13,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "IaC Project"
+      Project     = "IaC Portfolio Project"
       Environment = "Production"
       Provisioned = "Terraform"
     }

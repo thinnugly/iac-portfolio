@@ -1,4 +1,4 @@
-- hosts: role_proji_ec2_role
+- hosts: role_portfolio_ec2_role
   gather_facts: false
   
   roles:

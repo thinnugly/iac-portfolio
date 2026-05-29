@@ -6,7 +6,7 @@ resource "aws_instance" "ec2" {
   iam_instance_profile = var.iam_instance_profile
 
   tags = {
-    Name = "proji-${count.index + 1}"
+    Name = "portfolio-${count.index + 1}"
     Role = var.ec2_role
   }
 }
