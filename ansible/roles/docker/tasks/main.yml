@@ -1,60 +1,92 @@
 ---
-- name: Atualizar cache de pacotes
-  ansible.builtin.apt:
-    update_cache: yes
+  - name: Atualizar cache de pacotes
+    ansible.builtin.apt:
+      update_cache: yes
 
-- name: Instalar dependências necessárias
-  ansible.builtin.apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - software-properties-common
-    state: present
+  - name: Instalar dependências necessárias
+    ansible.builtin.apt:
+      name:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - unzip
+      state: present
 
-- name: Adicionar chave GPG oficial do Docker
-  ansible.builtin.apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+  - name: Adicionar chave GPG oficial do Docker
+    ansible.builtin.apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
 
-- name: Adicionar repositório Docker
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-    state: present
+  - name: Adicionar repositório Docker de forma dinâmica
+    ansible.builtin.apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+      state: present
 
-- name: Atualizar cache novamente
-  ansible.builtin.apt:
-    update_cache: yes
+  - name: Atualizar cache novamente
+    ansible.builtin.apt:
+      update_cache: yes
 
-- name: Instalar Docker Engine e Docker Compose plugin
-  ansible.builtin.apt:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-compose-plugin
-    state: present
+  - name: Instalar Docker Engine e Docker Compose plugin
+    ansible.builtin.apt:
+      name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-compose-plugin
+      state: present
 
-- name: Criar diretório da aplicação
-  ansible.builtin.file:
-    path: /opt/portfolio
-    state: directory
-    owner: ubuntu
-    group: ubuntu
-    mode: '0755'
+  - name: Criar diretório da aplicação
+    ansible.builtin.file:
+      path: /opt/portfolio
+      state: directory
+      owner: ubuntu
+      group: ubuntu
+      mode: '0755'
 
-- name: Garantir que o grupo docker existe
-  ansible.builtin.group:
-    name: docker
-    state: present
+  - name: Garantir que o grupo docker existe
+    ansible.builtin.group:
+      name: docker
+      state: present
 
-- name: Adicionar o usuário ubuntu ao grupo docker
-  ansible.builtin.user:
-    name: ubuntu
-    groups: docker
-    append: yes
+  - name: Adicionar o usuário ubuntu ao grupo docker
+    ansible.builtin.user:
+      name: ubuntu
+      groups: docker
+      append: yes
 
-- name: Forçar o reinício do serviço do Docker para aplicar as permissões do grupo
-  ansible.builtin.systemd_service:
-    name: docker
-    state: restarted
+  - name: Forçar o reinício do serviço do Docker
+    ansible.builtin.systemd_service:
+      name: docker
+      state: restarted
+
+  - name: Descarregar instalador da AWS CLI v2
+    ansible.builtin.get_url:
+      url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+      dest: /tmp/awscliv2.zip
+      mode: '0644'
+
+  - name: Criar diretório temporário para extração
+    ansible.builtin.file:
+      path: /tmp/awscli_extracted
+      state: directory
+      mode: '0755'
+
+  - name: Extrair o instalador da AWS CLI
+    ansible.builtin.unarchive:
+      src: /tmp/awscliv2.zip
+      dest: /tmp/awscli_extracted
+      remote_src: yes
+
+  - name: Executar o script de instalação oficial da AWS CLI
+    ansible.builtin.command:
+      cmd: /tmp/awscli_extracted/aws/install --update
+      creates: /usr/local/bin/aws
+
+  - name: Limpar ficheiros temporários de instalação
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    loop:
+      - /tmp/awscliv2.zip
+      - /tmp/awscli_extracted
