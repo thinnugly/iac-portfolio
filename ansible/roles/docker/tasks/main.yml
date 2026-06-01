@@ -17,9 +17,14 @@
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
+- name: Descobrir o codinome do Ubuntu via Shell
+  ansible.builtin.command: lsb_release -cs
+  register: ubuntu_codename
+  changed_when: false
+
 - name: Adicionar repositório Docker de forma dinâmica
   ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable"
     state: present
 
 - name: Atualizar cache após adicionar repositório
