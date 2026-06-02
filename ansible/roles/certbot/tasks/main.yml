@@ -1,0 +1,9 @@
+---
+- name: Atualizar cache de pacotes
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Instalar Certbot
+  ansible.builtin.apt:
+    name: certbot
+    state: present
